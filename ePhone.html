@@ -3,751 +3,741 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ePhone — прошивка | Emerald Inc.</title>
+    <title>ePhone — симулятор | Emerald Inc.</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #0a2e0a 0%, #0d3d0d 50%, #0a2e0a 100%);
-            color: #e0f0e0;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 2rem;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: rgba(13, 61, 13, 0.85);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 0 40px rgba(0, 200, 80, 0.1);
-            border: 1px solid rgba(0, 200, 80, 0.2);
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
-        h1 {
-            color: #00e676;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .back {
-            display: inline-block;
+        .back-link {
             color: #a0d0a0;
             text-decoration: none;
-            margin-bottom: 1.5rem;
             font-size: 0.9rem;
         }
-        .back:hover { color: #00e676; }
+        .back-link:hover { color: #00e676; }
 
         /* Телефон */
-        .phone-frame {
+        .phone {
             width: 320px;
             height: 640px;
-            background: #0a1a0a;
+            background: #000;
             border: 3px solid #1a3a1a;
-            border-radius: 40px;
-            margin: 1.5rem auto;
+            border-radius: 44px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 60px rgba(0, 200, 80, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 80px rgba(0,200,80,0.15), inset 0 0 40px rgba(0,0,0,0.7);
         }
-        .phone-screen {
+        .phone .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 28px;
+            background: #000;
+            border-radius: 0 0 16px 16px;
+            z-index: 10;
+        }
+        .phone .notch::after {
+            content: '📷';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+        }
+        .screen {
             width: 100%;
             height: 100%;
-            padding: 20px 16px;
+            padding: 36px 12px 12px;
             display: flex;
             flex-direction: column;
             background: linear-gradient(180deg, #0d2d0d 0%, #0a1a0a 100%);
+            position: relative;
         }
-        .phone-header {
+        .status-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(0, 200, 80, 0.15);
-            font-size: 0.75rem;
+            padding: 2px 4px 8px;
+            font-size: 11px;
             color: #a0d0a0;
+            font-weight: 600;
         }
-        .phone-header .time { color: #00e676; font-weight: 600; }
-        .phone-content {
+        .status-bar .time { color: #fff; }
+        .status-bar .icons { display: flex; gap: 4px; }
+
+        /* Екран */
+        .display {
             flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .page {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 0;
-            gap: 12px;
+            padding: 8px 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
         }
-        .phone-content .app-icon {
-            width: 56px;
-            height: 56px;
-            background: rgba(0, 200, 80, 0.1);
-            border: 1px solid rgba(0, 200, 80, 0.25);
+        .page.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0 8px;
+            border-bottom: 1px solid rgba(0,200,80,0.12);
+            margin-bottom: 8px;
+        }
+        .page-header .back-btn {
+            font-size: 18px;
+            cursor: pointer;
+            color: #00e676;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .page-header .back-btn:hover { background: rgba(0,200,80,0.1); }
+        .page-header .title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Іконки додатків */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 8px 4px;
+        }
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+        .app-icon:hover { background: rgba(0,200,80,0.08); }
+        .app-icon:active { transform: scale(0.92); }
+        .app-icon .icon-box {
+            width: 52px;
+            height: 52px;
+            background: rgba(0,200,80,0.1);
+            border: 1px solid rgba(0,200,80,0.2);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-size: 24px;
         }
-        .phone-content .app-icon:hover {
-            background: rgba(0, 200, 80, 0.2);
-            transform: scale(1.05);
-        }
-        .phone-content .app-icon:active {
-            transform: scale(0.95);
-        }
-        .phone-content .app-label {
-            font-size: 0.65rem;
-            color: #a0d0a0;
+        .app-icon .label {
+            font-size: 10px;
+            color: #c0e0c0;
             text-align: center;
         }
-        .phone-apps {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            width: 100%;
-            padding: 0 10px;
-        }
-        .phone-app {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-        .phone-app:hover .app-icon {
-            background: rgba(0, 200, 80, 0.2);
-            transform: scale(1.05);
-        }
-        .phone-app:active .app-icon {
-            transform: scale(0.95);
-        }
-        .phone-dock {
+
+        /* Док */
+        .dock {
             display: flex;
             justify-content: center;
-            gap: 24px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(0, 200, 80, 0.15);
-            width: 100%;
+            gap: 20px;
+            padding: 8px 0 4px;
+            border-top: 1px solid rgba(0,200,80,0.12);
+        }
+        .dock .app-icon .icon-box {
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
         }
 
-        /* Екран всередині телефону */
-        .screen-view {
-            flex: 1;
+        /* Список */
+        .list {
             display: flex;
             flex-direction: column;
-            padding: 10px 0;
-            overflow-y: auto;
+            gap: 2px;
         }
-        .screen-view .screen-title {
-            font-size: 0.85rem;
-            color: #00e676;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .screen-view .screen-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid rgba(0, 200, 80, 0.08);
-            font-size: 0.75rem;
-            color: #c0e0c0;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .screen-view .screen-item:hover {
-            background: rgba(0, 200, 80, 0.1);
-        }
-        .screen-view .screen-item .arrow {
-            color: #00e676;
-            float: right;
-        }
-        .screen-back {
-            font-size: 0.75rem;
-            color: #00e676;
-            cursor: pointer;
-            padding: 6px 0;
-            margin-bottom: 6px;
-        }
-        .screen-back:hover { opacity: 0.7; }
-
-        /* Панель з кодом */
-        .code-panel {
-            margin-top: 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 200, 80, 0.15);
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
             border-radius: 10px;
-            overflow: hidden;
-        }
-        .code-panel .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.6rem 1rem;
-            background: rgba(0, 200, 80, 0.08);
-            border-bottom: 1px solid rgba(0, 200, 80, 0.1);
-            font-size: 0.8rem;
-            color: #a0d0a0;
-        }
-        .code-panel .code-header .filename {
-            color: #00e676;
-            font-weight: 600;
-        }
-        .code-panel .code-body {
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.78rem;
-            color: #b0d8b0;
-            line-height: 1.6;
-            overflow-x: auto;
-            min-height: 100px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .code-panel .code-body .comment { color: #5a8a5a; }
-        .code-panel .code-body .keyword { color: #00e676; }
-        .code-panel .code-body .string { color: #ffd700; }
-        .code-panel .code-body .func { color: #48bfe3; }
-        .code-panel .code-body .type { color: #ff6b6b; }
-
-        /* Файлова система */
-        .fs-tree { margin-top: 1rem; }
-        .fs-folder {
-            margin-bottom: 2px;
-        }
-        .fs-folder-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
             cursor: pointer;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #c0e0c0;
             transition: background 0.2s;
-            user-select: none;
-        }
-        .fs-folder-header:hover {
-            background: rgba(0, 200, 80, 0.1);
-        }
-        .fs-folder-header .arrow {
-            transition: transform 0.2s;
-            font-size: 0.7rem;
-            color: #00e676;
-        }
-        .fs-folder-header .arrow.open {
-            transform: rotate(90deg);
-        }
-        .fs-folder-header .folder-icon { font-size: 1rem; }
-        .fs-folder-header .folder-name { font-weight: 500; }
-        .fs-folder-header .folder-desc {
-            font-size: 0.7rem;
-            color: #5a8a5a;
-            margin-left: auto;
-        }
-        .fs-children {
-            padding-left: 24px;
-            display: none;
-        }
-        .fs-children.open { display: block; }
-        .fs-file {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            color: #a0d0a0;
-            transition: background 0.2s;
-        }
-        .fs-file:hover {
-            background: rgba(0, 200, 80, 0.08);
+            font-size: 13px;
             color: #e0f0e0;
         }
-        .fs-file .file-icon { font-size: 0.85rem; }
-        .fs-file .file-ext {
-            font-size: 0.65rem;
-            color: #5a8a5a;
-            margin-left: auto;
-        }
-        .fs-file.active {
-            background: rgba(0, 200, 80, 0.15);
-            color: #00e676;
-        }
+        .list-item:hover { background: rgba(0,200,80,0.08); }
+        .list-item:active { background: rgba(0,200,80,0.15); }
+        .list-item .li-icon { font-size: 18px; width: 28px; text-align: center; }
+        .list-item .li-arrow { margin-left: auto; color: #5a8a5a; font-size: 14px; }
+        .list-item .li-right { margin-left: auto; color: #5a8a5a; font-size: 11px; }
 
-        /* Секції */
-        .section-title {
-            color: #00e676;
-            font-size: 1.1rem;
-            margin: 1.5rem 0 0.8rem;
-            border-bottom: 1px solid rgba(0, 200, 80, 0.15);
-            padding-bottom: 0.4rem;
-        }
-
-        /* Список екранів (клікабельні) */
-        .screens-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 8px;
-            margin: 1rem 0;
-        }
-        .screen-chip {
-            padding: 8px 12px;
-            background: rgba(0, 200, 80, 0.06);
-            border: 1px solid rgba(0, 200, 80, 0.15);
-            border-radius: 8px;
-            font-size: 0.78rem;
-            color: #c0e0c0;
-            cursor: pointer;
-            transition: all 0.2s;
+        /* Деталі */
+        .detail {
+            padding: 12px;
             text-align: center;
         }
-        .screen-chip:hover {
-            background: rgba(0, 200, 80, 0.15);
-            border-color: #00e676;
-            color: #00e676;
-        }
-        .screen-chip.active {
-            background: rgba(0, 200, 80, 0.2);
-            border-color: #00e676;
-            color: #00e676;
-        }
-        .screen-chip .chip-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+        .detail .big-icon { font-size: 40px; margin-bottom: 8px; }
+        .detail .d-title { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 4px; }
+        .detail .d-sub { font-size: 12px; color: #a0d0a0; margin-bottom: 12px; }
+        .detail .d-info { font-size: 11px; color: #5a8a5a; line-height: 1.6; }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 0.8rem;
-            margin: 1rem 0;
-        }
-        .stat-card {
-            background: rgba(0, 200, 80, 0.06);
-            border: 1px solid rgba(0, 200, 80, 0.15);
+        /* Кнопка */
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border: none;
             border-radius: 10px;
-            padding: 0.8rem;
-            text-align: center;
+            color: #0a2e0a;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
-        .stat-card .num {
-            font-size: 1.2rem;
-            color: #00e676;
-            font-weight: 700;
-        }
-        .stat-card .label {
-            font-size: 0.7rem;
-            color: #a0d0a0;
-            margin-top: 0.2rem;
-        }
+        .btn:hover { opacity: 0.85; }
+        .btn:active { transform: scale(0.96); }
 
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            align-items: start;
+        /* Індикатор */
+        .indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
         }
-        @media (max-width: 800px) {
-            .layout { grid-template-columns: 1fr; }
-            .phone-frame { width: 280px; height: 560px; }
+        .indicator.on { background: #00e676; }
+        .indicator.off { background: #5a5a5a; }
+
+        /* Повідомлення */
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,200,80,0.15);
+            border: 1px solid rgba(0,200,80,0.3);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #00e676;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
         }
-        @media (max-width: 600px) {
-            .container { padding: 1rem; }
-            h1 { font-size: 1.5rem; }
-            .phone-frame { width: 240px; height: 480px; }
-            .phone-apps { gap: 10px; }
-            .phone-content .app-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+        .toast.show { opacity: 1; }
+
+        /* Індикатор сторінок */
+        .page-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px 0;
+        }
+        .page-dots .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3a5a3a;
+            transition: background 0.2s;
+        }
+        .page-dots .dot.active { background: #00e676; }
+
+        @media (max-width: 400px) {
+            .phone { width: 280px; height: 560px; border-radius: 36px; }
+            .screen { padding: 32px 10px 10px; }
+            .app-icon .icon-box { width: 44px; height: 44px; font-size: 20px; }
+            .apps-grid { gap: 8px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="/EMERALD.inc/index.html" class="back">← Назад до Emerald Inc.</a>
-        <h1>📱 ePhone — прошивка</h1>
-        <p style="color: #a0d0a0; margin-bottom: 1rem;">Флагманський смартфон від компанії Emerald — інтерактивна структура прошивки</p>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="num">C++</div>
-                <div class="label">Мова програмування</div>
-            </div>
-            <div class="stat-card">
-                <div class="num">LVGL</div>
-                <div class="label">Графічна бібліотека</div>
-            </div>
-            <div class="stat-card">
-                <div class="num">ESP32</div>
-                <div class="label">Мікроконтролер</div>
-            </div>
-            <div class="stat-card">
-                <div class="num">TFT</div>
-                <div class="label">Кольоровий екран</div>
-            </div>
-        </div>
-
-        <div class="layout">
-            <!-- Ліва колонка: телефон -->
-            <div>
-                <div class="section-title">📱 Симулятор ePhone</div>
-                <div class="phone-frame" id="phoneFrame">
-                    <div class="phone-screen" id="phoneScreen">
-                        <div class="phone-header">
-                            <span class="time" id="phoneTime">12:00</span>
-                            <span>📶 🔋</span>
+    <div class="wrapper">
+        <a href="/EMERALD.inc/index.html" class="back-link">← Emerald Inc.</a>
+        <div class="phone" id="phone">
+            <div class="notch"></div>
+            <div class="screen">
+                <div class="status-bar">
+                    <span class="time" id="time">12:00</span>
+                    <span class="icons">📶 🔋</span>
+                </div>
+                <div class="display" id="display">
+                    <!-- Головний екран -->
+                    <div class="page active" id="page-home">
+                        <div class="apps-grid">
+                            <div class="app-icon" onclick="navigate('settings')">
+                                <div class="icon-box">⚙️</div>
+                                <div class="label">Налаштування</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('about')">
+                                <div class="icon-box">ℹ️</div>
+                                <div class="label">Про телефон</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('console')">
+                                <div class="icon-box">🖥️</div>
+                                <div class="label">Консоль</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('games')">
+                                <div class="icon-box">🎮</div>
+                                <div class="label">Ігри</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('spy')">
+                                <div class="icon-box">🕵️</div>
+                                <div class="label">Спостереження</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('profile')">
+                                <div class="icon-box">👤</div>
+                                <div class="label">Профіль</div>
+                            </div>
                         </div>
-                        <div class="phone-content" id="phoneContent">
-                            <!-- Динамічний контент -->
+                        <div class="page-dots">
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <div class="dock">
+                            <div class="app-icon" onclick="navigate('story')">
+                                <div class="icon-box">📖</div>
+                                <div class="label">Історії</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('archive')">
+                                <div class="icon-box">📦</div>
+                                <div class="label">Архів</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('calibrate')">
+                                <div class="icon-box">📐</div>
+                                <div class="label">Калібр.</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Права колонка: код -->
-            <div>
-                <div class="section-title">💻 Код файлу</div>
-                <div class="code-panel">
-                    <div class="code-header">
-                        <span class="filename" id="codeFilename">main.cpp</span>
-                        <span id="codePath" style="font-size:0.7rem; color:#5a8a5a;">src/main.cpp</span>
+                    <!-- Налаштування -->
+                    <div class="page" id="page-settings">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">⚙️ Налаштування</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="navigate('wifi')">
+                                <span class="li-icon">📶</span> Wi-Fi
+                                <span class="li-right">Дім</span>
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('bluetooth')">
+                                <span class="li-icon">🔵</span> Bluetooth
+                                <span class="li-right">Вимк.</span>
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('display-settings')">
+                                <span class="li-icon">☀️</span> Дисплей
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('sound')">
+                                <span class="li-icon">🔊</span> Звук
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('battery')">
+                                <span class="li-icon">🔋</span> Акумулятор
+                                <span class="li-right">85%</span>
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('storage')">
+                                <span class="li-icon">💾</span> Пам'ять
+                                <span class="li-right">6.2/32 ГБ</span>
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="navigate('security')">
+                                <span class="li-icon">🔒</span> Безпека
+                                <span class="li-arrow">›</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="code-body" id="codeBody">
-                        <span class="comment">// Натисніть на файл у структурі,</span>
-                        <br><span class="comment">// щоб побачити його код</span>
+
+                    <!-- Wi-Fi -->
+                    <div class="page" id="page-wifi">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">📶 Wi-Fi</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Підключення до Home_Network...')">
+                                <span class="li-icon">📶</span> Home_Network
+                                <span class="li-right"><span class="indicator on"></span></span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Neighbor_5G...')">
+                                <span class="li-icon">📶</span> Neighbor_5G
+                                <span class="li-right">🔒</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Office_Guest...')">
+                                <span class="li-icon">📶</span> Office_Guest
+                                <span class="li-right">🔒</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Public_Free...')">
+                                <span class="li-icon">📶</span> Public_Free
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="section-title">📂 Файлова система</div>
-                <div class="fs-tree" id="fsTree">
-                    <!-- Динамічне дерево -->
-                </div>
+                    <!-- Bluetooth -->
+                    <div class="page" id="page-bluetooth">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">🔵 Bluetooth</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🔵</div>
+                            <div class="d-title">Bluetooth</div>
+                            <div class="d-sub">Вимкнено</div>
+                            <button class="btn" onclick="toast('🔵 Bluetooth увімкнено. Пошук пристроїв...')">Увімкнути</button>
+                        </div>
+                    </div>
 
-                <div class="section-title">📋 Екрани прошивки</div>
-                <p style="font-size:0.8rem; color:#a0d0a0; margin-bottom:0.5rem;">Натисніть на екран, щоб побачити його на телефоні та код</p>
-                <div class="screens-grid" id="screensGrid">
-                    <!-- Динамічні екрани -->
-                </div>
-            </div>
-        </div>
+                    <!-- Дисплей -->
+                    <div class="page" id="page-display-settings">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">☀️ Дисплей</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Яскравість: 75%')">
+                                <span class="li-icon">☀️</span> Яскравість
+                                <span class="li-right">75%</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Темна тема активована')">
+                                <span class="li-icon">🌙</span> Темна тема
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Автоповорот: увімкнено')">
+                                <span class="li-icon">🔄</span> Автоповорот
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                        </div>
+                    </div>
 
-        <p style="text-align: center; margin-top: 2rem; color: #a0d0a0; font-size: 0.85rem;">
-            ePhone — продукт компанії <a href="/EMERALD.inc/index.html" style="color: #00e676; text-decoration: none;">Emerald Inc.</a>
-        </p>
-    </div>
+                    <!-- Звук -->
+                    <div class="page" id="page-sound">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">🔊 Звук</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Режим: Дзвінок')">
+                                <span class="li-icon">🔔</span> Режим
+                                <span class="li-right">Дзвінок</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Гучність: 70%')">
+                                <span class="li-icon">🔊</span> Гучність
+                                <span class="li-right">70%</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Вібрація: увімкнено')">
+                                <span class="li-icon">📳</span> Вібрація
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Акумулятор -->
+                    <div class="page" id="page-battery">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">🔋 Акумулятор</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🔋</div>
+                            <div class="d-title">85%</div>
+                            <div class="d-sub">Залишилось ~8 год</div>
+                            <div class="d-info">Налаштування живлення<br>Режим економії: Вимк.</div>
+                            <button class="btn" onclick="toast('🔋 Режим економії увімкнено')">Економія</button>
+                        </div>
+                    </div>
+
+                    <!-- Пам'ять -->
+                    <div class="page" id="page-storage">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">💾 Пам'ять</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">💾</div>
+                            <div class="d-title">6.2 / 32 ГБ</div>
+                            <div class="d-sub">Використано 19%</div>
+                            <div class="d-info">
+                                📷 Зображення: 2.1 ГБ<br>
+                                🎵 Аудіо: 0.8 ГБ<br>
+                                📦 Додатки: 1.5 ГБ<br>
+                                📄 Інше: 1.8 ГБ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Безпека -->
+                    <div class="page" id="page-security">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')">‹</div>
+                            <div class="title">🔒 Безпека</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('🔒 Блокування екрану: PIN')">
+                                <span class="li-icon">🔐</span> Блокування
+                                <span class="li-right">PIN</span>
+                            </div>
+                            <div class="list-item" onclick="toast('✅ Відбиток пальця додано')">
+                                <span class="li-icon">🖐️</span> Відбиток
+                                <span class="li-right">1/3</span>
+                            </div>
+                            <div class="list-item" onclick="toast('🔑 Шифрування активовано')">
+                                <span class="li-icon">🔑</span> Шифрування
+                                <span class="li-right">Актив.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Про телефон -->
+                    <div class="page" id="page-about">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">ℹ️ Про телефон</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">📱</div>
+                            <div class="d-title">ePhone v1.0</div>
+                            <div class="d-sub">Emerald Inc.</div>
+                            <div class="d-info">
+                                ESP32 @ 240MHz<br>
+                                320×480 TFT дисплей<br>
+                                LVGL v8.3<br>
+                                Прошивка: 1.0.0<br>
+                                Збірка: #42
+                            </div>
+                            <button class="btn" onclick="toast('🔄 Перевірка оновлень...')">Перевірити оновлення</button>
+                        </div>
+                    </div>
+
+                    <!-- Консоль -->
+                    <div class="page" id="page-console">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">🖥️ Консоль</div>
+                        </div>
+                        <div class="detail">
+                            <div class="d-info" style="text-align:left;font-family:monospace;font-size:11px;color:#00e676;background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;">
+                                > ePhone v1.0<br>
+                                > Система готова<br>
+                                > Введіть команду...<br>
+                                > <span style="animation:blink 1s infinite;">_</span>
+                            </div>
+                            <div style="margin-top:8px;display:flex;gap:6px;">
+                                <button class="btn" style="flex:1;font-size:11px;padding:8px;" onclick="toast('📋 Список команд: help, info, status, reboot')">help</button>
+                                <button class="btn" style="flex:1;font-size:11px;padding:8px;" onclick="toast('📊 Статус: OK | RAM: 45% | CPU: 12%')">status</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ігри -->
+                    <div class="page" id="page-games">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">🎮 Ігри</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="navigate('snake-game')">
+                                <span class="li-icon">🐍</span> Snake
+                                <span class="li-arrow">›</span>
+                            </div>
+                            <div class="list-item" onclick="toast('🎮 Tetris — скоро!')">
+                                <span class="li-icon">🧱</span> Tetris
+                                <span class="li-right">Скоро</span>
+                            </div>
+                            <div class="list-item" onclick="toast('🏓 Pong — скоро!')">
+                                <span class="li-icon">🏓</span> Pong
+                                <span class="li-right">Скоро</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Snake гра -->
+                    <div class="page" id="page-snake-game">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('games')">‹</div>
+                            <div class="title">🐍 Snake</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🐍</div>
+                            <div class="d-title">Snake</div>
+                            <div class="d-sub">Класична гра</div>
+                            <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                                <button class="btn" style="font-size:11px;padding:8px 16px;" onclick="toast('🐍 Гра починається!')">Старт</button>
+                                <button class="btn" style="font-size:11px;padding:8px 16px;background:rgba(0,200,80,0.15);color:#00e676;" onclick="toast('🏆 Рекорд: 42')">Рекорди</button>
+                            </div>
+                            <div class="d-info" style="margin-top:8px;">
+                                🕹️ Керування: ← ↑ → ↓<br>
+                                🎯 Збирай їжу та рост
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Спостереження -->
+                    <div class="page" id="page-spy">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">🕵️ Спостереження</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🕵️</div>
+                            <div class="d-title">Режим спостереження</div>
+                            <div class="d-sub">Всі системи активні</div>
+                            <div class="d-info" style="text-align:left;">
+                                📷 Камера: <span style="color:#00e676;">OFF</span><br>
+                                🎤 Мікрофон: <span style="color:#00e676;">OFF</span><br>
+                                📍 GPS: 48.8566, 2.3522<br>
+                                📡 Wi-Fi сканування...
+                            </div>
+                            <button class="btn" onclick="toast('🕵️ Сканування мережі... Знайдено 3 пристрої')">Сканувати</button>
+                        </div>
+                    </div>
+
+                    <!-- Профіль -->
+                    <div class="page" id="page-profile">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">👤 Профіль</div>
+                        </div>
+                        <div class="detail">
+                            <div style="width:64px;height:64px;background:linear-gradient(135deg,#00e676,#00c853);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 8px;">👤</div>
+                            <div class="d-title">Користувач ePhone</div>
+                            <div class="d-sub">user@emerald.inc</div>
+                            <div class="d-info">
+                                📱 Пристроїв: 1<br>
+                                📦 Додатків: 12<br>
+                                🔄 Оновлень: 5
+                            </div>
+                            <button class="btn" onclick="toast('👤 Профіль оновлено')">Редагувати</button>
+                        </div>
+                    </div>
+
+                    <!-- Історії -->
+                    <div class="page" id="page-story">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">📖 Історії</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('📖 Ласкаво просимо до ePhone!')">
+                                <span class="li-icon">👋</span> Ласкаво просимо!
+                                <span class="li-right">2 год тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📖 Оновлення прошивки 1.1.0')">
+                                <span class="li-icon">🔄</span> Оновлення 1.1.0
+                                <span class="li-right">1 день тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📖 Нові ігри в магазині')">
+                                <span class="li-icon">🎮</span> Нові ігри
+                                <span class="li-right">3 дні тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📖 Зустрічайте ePhone Pro')">
+                                <span class="li-icon">📱</span> ePhone Pro
+                                <span class="li-right">1 тиж. тому</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Архів -->
+                    <div class="page" id="page-archive">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">📦 Архів</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('📦 Відкриваю photo_001.jpg')">
+                                <span class="li-icon">🖼️</span> photo_001.jpg
+                                <span class="li-right">2.3 МБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📦 Відкриваю notes.txt')">
+                                <span class="li-icon">📄</span> notes.txt
+                                <span class="li-right">12 КБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📦 Відкриваю backup.bin')">
+                                <span class="li-icon">💾</span> backup.bin
+                                <span class="li-right">128 МБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast('📦 Відкриваю config.json')">
+                                <span class="li-icon">⚙️</span> config.json
+                                <span class="li-right">4 КБ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Калібрування -->
+                    <div class="page" id="page-calibrate">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()">‹</div>
+                            <div class="title">📐 Калібрування</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">📐</div>
+                            <div class="d-title">Калібрування сенсора</div>
+                            <div class="d-sub">Натисніть на ціль</div>
+                            <div style="width:200px;height:200px;margin:12px auto;background:rgba(0,200,80,0.05);border:1px solid rgba(0,200,80,0.2);border-radius:12px;position:relative;">
+                                <div style="position:absolute;top:20px;left:30px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast('🎯 Ціль 1/5 — 20%')"></div>
+                                <div style="position:absolute;top:80px;left:140px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast('🎯 Ціль 2/5 — 40%')"></div>
+                                <div style="position:absolute;top:150px;left:50px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast('🎯 Ціль 3/5 — 60%')"></div>
+                                <div style="position:absolute;top:40px;left:160px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast('🎯 Ціль 4/5 — 80%')"></div>
+                                <div style="position:absolute;top:160px;left:160px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast('🎯 Ціль 5/5 — 100%')"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /display -->
+
+                <div class="toast" id="toast"></div>
+            </div><!-- /screen -->
+        </div><!-- /phone -->
+    </div><!-- /wrapper -->
 
     <script>
-        // ========== ДАНІ ==========
-        const files = {
-            'src/main.cpp': {
-                name: 'main.cpp',
-                path: 'src/main.cpp',
-                icon: '📄',
-                code: `#include <lvgl.h>\n#include <TFT_eSPI.h>\n#include "screens/BootScreen.h"\n#include "screens/MenuScreen.h"\n#include "services/TouchManager.h"\n\nvoid setup() {\n  Serial.begin(115200);\n  lv_init();\n  tft.begin();\n  touch.begin();\n  BootScreen::show();\n  MenuScreen::show();\n}\n\nvoid loop() {\n  lv_timer_handler();\n  touch.update();\n  delay(5);\n}`
-            },
-            'src/apps/Snake.cpp': {
-                name: 'Snake.cpp',
-                path: 'src/apps/Snake.cpp',
-                icon: '🐍',
-                code: `#include "Snake.h"\n\nSnake::Snake() {\n  direction = RIGHT;\n  length = 3;\n  for (int i = 0; i < length; i++) {\n    body[i] = {10 - i, 10};\n  }\n}\n\nvoid Snake::move() {\n  Point next = body[0];\n  switch (direction) {\n    case UP:    next.y--; break;\n    case DOWN:  next.y++; break;\n    case LEFT:  next.x--; break;\n    case RIGHT: next.x++; break;\n  }\n  for (int i = length - 1; i > 0; i--) {\n    body[i] = body[i - 1];\n  }\n  body[0] = next;\n}\n\nvoid Snake::grow() {\n  body[length] = body[length - 1];\n  length++;\n}\n\nbool Snake::checkCollision() {\n  for (int i = 1; i < length; i++) {\n    if (body[0].x == body[i].x && body[0].y == body[i].y)\n      return true;\n  }\n  return body[0].x < 0 || body[0].x >= GRID_W ||\n         body[0].y < 0 || body[0].y >= GRID_H;\n}`
-            },
-            'src/apps/Snake.h': {
-                name: 'Snake.h',
-                path: 'src/apps/Snake.h',
-                icon: '📄',
-                code: `#ifndef SNAKE_H\n#define SNAKE_H\n\n#include <Arduino.h>\n\n#define GRID_W 20\n#define GRID_H 20\n#define MAX_LEN 100\n\nenum Direction { UP, DOWN, LEFT, RIGHT };\n\nstruct Point {\n  int x, y;\n};\n\nclass Snake {\npublic:\n  Snake();\n  void move();\n  void grow();\n  void setDirection(Direction d) { direction = d; }\n  Direction getDirection() { return direction; }\n  Point getHead() { return body[0]; }\n  Point getBody(int i) { return body[i]; }\n  int getLength() { return length; }\n  bool checkCollision();\n\nprivate:\n  Point body[MAX_LEN];\n  Direction direction;\n  int length;\n};\n\n#endif`
-            },
-            'src/services/TouchManager.cpp': {
-                name: 'TouchManager.cpp',
-                path: 'src/services/TouchManager.cpp',
-                icon: '📄',
-                code: `#include "TouchManager.h"\n\nTouchManager touch;\n\nvoid TouchManager::begin() {\n  // Ініціалізація сенсорного екрану\n  pinMode(TOUCH_CS, OUTPUT);\n  digitalWrite(TOUCH_CS, HIGH);\n  SPI.begin(TOUCH_SCLK, TOUCH_MISO, TOUCH_MOSI, TOUCH_CS);\n}\n\nvoid TouchManager::update() {\n  if (!touched) return;\n  // Оновлення позиції дотику\n  uint16_t x, y;\n  if (getTouch(&x, &y)) {\n    lastX = map(x, 0, 320, 0, LV_HOR_RES);\n    lastY = map(y, 0, 480, 0, LV_VER_RES);\n    lv_indev_set_point(indev_driver, {lastX, lastY});\n  }\n}\n\nbool TouchManager::getTouch(uint16_t *x, uint16_t *y) {\n  // Читання даних з сенсора\n  digitalWrite(TOUCH_CS, LOW);\n  // ... SPI communication\n  digitalWrite(TOUCH_CS, HIGH);\n  return true;\n}`
-            },
-            'src/services/TouchManager.h': {
-                name: 'TouchManager.h',
-                path: 'src/services/TouchManager.h',
-                icon: '📄',
-                code: `#ifndef TOUCH_MANAGER_H\n#define TOUCH_MANAGER_H\n\n#include <Arduino.h>\n#include <SPI.h>\n#include <lvgl.h>\n\n#define TOUCH_CS   15\n#define TOUCH_MOSI 13\n#define TOUCH_MISO 12\n#define TOUCH_SCLK 14\n\nclass TouchManager {\npublic:\n  void begin();\n  void update();\n  bool isTouched() { return touched; }\n  uint16_t getX() { return lastX; }\n  uint16_t getY() { return lastY; }\n\nprivate:\n  bool getTouch(uint16_t *x, uint16_t *y);\n  bool touched = false;\n  uint16_t lastX = 0, lastY = 0;\n  lv_indev_drv_t indev_driver;\n};\n\nextern TouchManager touch;\n#endif`
-            },
-            'src/services/WiFiService.cpp': {
-                name: 'WiFiService.cpp',
-                path: 'src/services/WiFiService.cpp',
-                icon: '📄',
-                code: `#include "WiFiService.h"\n\nvoid WiFiService::connect(const char* ssid, const char* pass) {\n  WiFi.begin(ssid, pass);\n  int attempts = 0;\n  while (WiFi.status() != WL_CONNECTED && attempts < 20) {\n    delay(500);\n    attempts++;\n  }\n}\n\nbool WiFiService::isConnected() {\n  return WiFi.status() == WL_CONNECTED;\n}\n\nString WiFiService::getIP() {\n  return WiFi.localIP().toString();\n}\n\nvoid WiFiService::disconnect() {\n  WiFi.disconnect();\n}`
-            },
-            'src/services/WiFiService.h': {
-                name: 'WiFiService.h',
-                path: 'src/services/WiFiService.h',
-                icon: '📄',
-                code: `#ifndef WIFI_SERVICE_H\n#define WIFI_SERVICE_H\n\n#include <Arduino.h>\n#include <WiFi.h>\n\nclass WiFiService {\npublic:\n  void connect(const char* ssid, const char* pass);\n  bool isConnected();\n  String getIP();\n  void disconnect();\n};\n\n#endif`
-            },
-            'src/ui/Animations.cpp': {
-                name: 'Animations.cpp',
-                path: 'src/ui/Animations.cpp',
-                icon: '📄',
-                code: `#include "Animations.h"\n\nvoid Animations::fadeIn(lv_obj_t* obj, uint32_t duration) {\n  lv_anim_t a;\n  lv_anim_init(&a);\n  lv_anim_set_var(&a, obj);\n  lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_style_opa);\n  lv_anim_set_values(&a, 0, LV_OPA_COVER);\n  lv_anim_set_time(&a, duration);\n  lv_anim_set_path_cb(&a, lv_anim_path_ease_out);\n  lv_anim_start(&a);\n}\n\nvoid Animations::slideUp(lv_obj_t* obj, uint32_t duration) {\n  lv_anim_t a;\n  lv_anim_init(&a);\n  lv_anim_set_var(&a, obj);\n  lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_y);\n  lv_anim_set_values(&a, 100, 0);\n  lv_anim_set_time(&a, duration);\n  lv_anim_set_path_cb(&a, lv_anim_path_ease_out);\n  lv_anim_start(&a);\n}`
-            },
-            'src/ui/Animations.h': {
-                name: 'Animations.h',
-                path: 'src/ui/Animations.h',
-                icon: '📄',
-                code: `#ifndef ANIMATIONS_H\n#define ANIMATIONS_H\n\n#include <lvgl.h>\n\nclass Animations {\npublic:\n  static void fadeIn(lv_obj_t* obj, uint32_t duration = 300);\n  static void slideUp(lv_obj_t* obj, uint32_t duration = 400);\n  static void scale(lv_obj_t* obj, uint32_t duration = 200);\n};\n\n#endif`
-            },
-            'src/ui/UIComponents.cpp': {
-                name: 'UIComponents.cpp',
-                path: 'src/ui/UIComponents.cpp',
-                icon: '📄',
-                code: `#include "UIComponents.h"\n\nlv_obj_t* UIComponents::createButton(lv_obj_t* parent, const char* text) {\n  lv_obj_t* btn = lv_btn_create(parent);\n  lv_obj_set_size(btn, 120, 40);\n  lv_obj_center(btn);\n  \n  lv_obj_t* label = lv_label_create(btn);\n  lv_label_set_text(label, text);\n  lv_obj_center(label);\n  \n  return btn;\n}\n\nlv_obj_t* UIComponents::createCard(lv_obj_t* parent, const char* title) {\n  lv_obj_t* card = lv_obj_create(parent);\n  lv_obj_set_size(card, 200, 120);\n  lv_obj_set_style_border_width(card, 1, 0);\n  \n  lv_obj_t* label = lv_label_create(card);\n  lv_label_set_text(label, title);\n  lv_obj_align(label, LV_ALIGN_TOP_LEFT, 10, 10);\n  \n  return card;\n}`
-            },
-            'src/ui/UIComponents.h': {
-                name: 'UIComponents.h',
-                path: 'src/ui/UIComponents.h',
-                icon: '📄',
-                code: `#ifndef UI_COMPONENTS_H\n#define UI_COMPONENTS_H\n\n#include <lvgl.h>\n\nclass UIComponents {\npublic:\n  static lv_obj_t* createButton(lv_obj_t* parent, const char* text);\n  static lv_obj_t* createCard(lv_obj_t* parent, const char* title);\n  static lv_obj_t* createList(lv_obj_t* parent);\n  static lv_obj_t* createSlider(lv_obj_t* parent, int min, int max);\n};\n\n#endif`
-            },
-            'src/ui/VirtualKeyboard.cpp': {
-                name: 'VirtualKeyboard.cpp',
-                path: 'src/ui/VirtualKeyboard.cpp',
-                icon: '📄',
-                code: `#include "VirtualKeyboard.h"\n\nvoid VirtualKeyboard::create(lv_obj_t* parent) {\n  kb = lv_keyboard_create(parent);\n  lv_obj_set_size(kb, LV_HOR_RES, LV_VER_RES / 3);\n  lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0);\n  lv_keyboard_set_mode(kb, LV_KEYBOARD_MODE_TEXT_LOWER);\n}\n\nvoid VirtualKeyboard::attach(lv_obj_t* textarea) {\n  lv_keyboard_set_textarea(kb, textarea);\n}\n\nvoid VirtualKeyboard::setMode(lv_keyboard_mode_t mode) {\n  lv_keyboard_set_mode(kb, mode);\n}\n\nvoid VirtualKeyboard::hide() {\n  lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);\n}\n\nvoid VirtualKeyboard::show() {\n  lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);\n}`
-            },
-            'src/ui/VirtualKeyboard.h': {
-                name: 'VirtualKeyboard.h',
-                path: 'src/ui/VirtualKeyboard.h',
-                icon: '📄',
-                code: `#ifndef VIRTUAL_KEYBOARD_H\n#define VIRTUAL_KEYBOARD_H\n\n#include <lvgl.h>\n\nclass VirtualKeyboard {\npublic:\n  void create(lv_obj_t* parent);\n  void attach(lv_obj_t* textarea);\n  void setMode(lv_keyboard_mode_t mode);\n  void hide();\n  void show();\n  lv_obj_t* get() { return kb; }\n\nprivate:\n  lv_obj_t* kb = nullptr;\n};\n\n#endif`
-            },
-            'include/lv_conf.h': {
-                name: 'lv_conf.h',
-                path: 'include/lv_conf.h',
-                icon: '⚙️',
-                code: `#ifndef LV_CONF_H\n#define LV_CONF_H\n\n#define LV_COLOR_DEPTH 16\n#define LV_HOR_RES 320\n#define LV_VER_RES 480\n\n#define LV_USE_BTN 1\n#define LV_USE_LABEL 1\n#define LV_USE_SLIDER 1\n#define LV_USE_LIST 1\n#define LV_USE_DROPDOWN 1\n#define LV_USE_TEXTAREA 1\n#define LV_USE_KEYBOARD 1\n#define LV_USE_ANIMATION 1\n\n#define LV_FONT_MONTSERRAT_14 1\n#define LV_FONT_MONTSERRAT_16 1\n#define LV_FONT_DEFAULT &lv_font_montserrat_14\n\n#define LV_MEM_SIZE (32 * 1024)\n\n#endif`
-            },
-            'platformio.ini': {
-                name: 'platformio.ini',
-                path: 'platformio.ini',
-                icon: '⚙️',
-                code: `[env:esp32dev]\nplatform = espressif32\nboard = esp32dev\nframework = arduino\n\nlib_deps =\n  lvgl/lvgl@^8.3.0\n  bodmer/TFT_eSPI@^2.5.0\n\nbuild_flags =\n  -D LV_CONF_INCLUDE_SIMPLE\n  -I include/\n\nmonitor_speed = 115200`
-            },
-            'test/touch_test.cpp': {
-                name: 'touch_test.cpp',
-                path: 'test/touch_test.cpp',
-                icon: '🧪',
-                code: `#include <Arduino.h>\n#include <lvgl.h>\n#include <TFT_eSPI.h>\n\nTFT_eSPI tft;\n\nvoid setup() {\n  Serial.begin(115200);\n  tft.begin();\n  tft.setRotation(1);\n  tft.fillScreen(TFT_BLACK);\n  tft.setTextColor(TFT_GREEN);\n  tft.drawString("Touch Test", 100, 200, 4);\n}\n\nvoid loop() {\n  uint16_t x, y;\n  if (tft.getTouch(&x, &y)) {\n    tft.fillCircle(x, y, 5, TFT_GREEN);\n    Serial.printf("Touch at: %d, %d\\n", x, y);\n  }\n  delay(10);\n}`
-            }
-        };
-
-        const screens = [
-            { id: 'boot', icon: '🔋', name: 'BootScreen', desc: 'Завантаження', code: '// BootScreen::show()\n// Анімація завантаження\nlv_obj_t* boot = lv_obj_create(lv_scr_act());\nlv_obj_set_style_bg_color(boot, lv_color_hex(0x0a2e0a), 0);\n\nlv_obj_t* logo = lv_label_create(boot);\nlv_label_set_text(logo, "ePhone");\nlv_obj_set_style_text_color(logo, lv_color_hex(0x00e676), 0);\nlv_obj_align(logo, LV_ALIGN_CENTER, 0, -20);\n\nlv_obj_t* spinner = lv_spinner_create(boot, 1000, 60);\nlv_obj_set_size(spinner, 40, 40);\nlv_obj_align(spinner, LV_ALIGN_CENTER, 0, 30);\n\nlv_anim_t a;\nlv_anim_init(&a);\nlv_anim_set_var(&a, logo);\nlv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_style_opa);\nlv_anim_set_values(&a, 0, 255);\nlv_anim_set_time(&a, 1000);\nlv_anim_start(&a);' },
-            { id: 'menu', icon: '🏠', name: 'MenuScreen', desc: 'Головне меню', code: '// MenuScreen::show()\n// Головне меню з іконками додатків\nlv_obj_t* menu = lv_obj_create(lv_scr_act());\n\nconst char* apps[] = {"Налаштування", "Про нас", "Консоль", "Ігри", "Архів", "Профіль"};\nconst char* icons[] = {LV_SYMBOL_SETTINGS, LV_SYMBOL_INFO, LV_SYMBOL_TERMINAL, LV_SYMBOL_PLAY, LV_SYMBOL_SAVE, LV_SYMBOL_USER};\n\nfor (int i = 0; i < 6; i++) {\n  lv_obj_t* btn = lv_btn_create(menu);\n  lv_obj_set_size(btn, 80, 80);\n  lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 10 + (i % 3) * 90, 10 + (i / 3) * 90);\n  \n  lv_obj_t* label = lv_label_create(btn);\n  lv_label_set_text(label, apps[i]);\n  lv_obj_center(label);\n}' },
-            { id: 'settings', icon: '⚙️', name: 'SettingsScreen', desc: 'Налаштування', code: '// SettingsScreen::show()\n// Екран налаштувань\nlv_obj_t* settings = lv_obj_create(lv_scr_act());\n\nlv_obj_t* list = lv_list_create(settings);\nlv_obj_set_size(list, 280, 400);\nlv_obj_center(list);\n\nlv_list_add_btn(list, LV_SYMBOL_WIFI, "Wi-Fi");\nlv_list_add_btn(list, LV_SYMBOL_BLUETOOTH, "Bluetooth");\nlv_list_add_btn(list, LV_SYMBOL_BRIGHTNESS, "Дисплей");\nlv_list_add_btn(list, LV_SYMBOL_VOLUME, "Звук");\nlv_list_add_btn(list, LV_SYMBOL_BATTERY, "Акумулятор");\nlv_list_add_btn(list, LV_SYMBOL_SD_CARD, "Пам\'ять");' },
-            { id: 'about', icon: 'ℹ️', name: 'AboutScreen', desc: 'Про пристрій', code: '// AboutScreen::show()\n// Інформація про пристрій\nlv_obj_t* about = lv_obj_create(lv_scr_act());\n\nlv_obj_t* title = lv_label_create(about);\nlv_label_set_text(title, "ePhone v1.0");\nlv_obj_set_style_text_color(title, lv_color_hex(0x00e676), 0);\nlv_obj_align(title, LV_ALIGN_TOP_MID, 0, 20);\n\nlv_obj_t* info = lv_label_create(about);\nlv_label_set_text(info, "ESP32 @ 240MHz\\n320x480 TFT\\nLVGL v8.3\\nEmerald Inc.");\nlv_obj_align(info, LV_ALIGN_CENTER, 0, 0);\n\nlv_obj_t* ver = lv_label_create(about);\nlv_label_set_text(ver, "Прошивка: 1.0.0");\nlv_obj_align(ver, LV_ALIGN_BOTTOM_MID, 0, -20);' },
-            { id: 'console', icon: '🖥️', name: 'ConsoleScreen', desc: 'Консоль', code: '// ConsoleScreen::show()\n// Термінал/консоль\nlv_obj_t* console = lv_obj_create(lv_scr_act());\n\nlv_obj_t* ta = lv_textarea_create(console);\nlv_obj_set_size(ta, 280, 350);\nlv_obj_align(ta, LV_ALIGN_TOP_MID, 0, 10);\nlv_textarea_set_text(ta, "> ePhone v1.0\\n> Система готова\\n> Введіть команду...");\nlv_textarea_set_readonly(ta, true);\n\nlv_obj_t* input = lv_textarea_create(console);\nlv_obj_set_size(input, 280, 40);\nlv_obj_align(input, LV_ALIGN_BOTTOM_MID, 0, -10);\nlv_textarea_set_placeholder_text(input, "Введіть команду...");' },
-            { id: 'spy', icon: '🕵️', name: 'SpyScreen', desc: 'Шпигунський режим', code: '// SpyScreen::show()\n// Шпигунський режим\nlv_obj_t* spy = lv_obj_create(lv_scr_act());\nlv_obj_set_style_bg_color(spy, lv_color_hex(0x000000), 0);\n\nlv_obj_t* label = lv_label_create(spy);\nlv_label_set_text(label, "РЕЖИМ СПОСТЕРЕЖЕННЯ\\n\\n📷 Камера: OFF\\n🎤 Мікрофон: OFF\\n📍 GPS: 48.8566, 2.3522");\nlv_obj_set_style_text_color(label, lv_color_hex(0x00ff00), 0);\nlv_obj_center(label);\n\n// Сканування Wi-Fi мереж\nlv_obj_t* scan = lv_label_create(spy);\nlv_label_set_text(scan, "\\n\\nWi-Fi мережі:\\n- Home_Network (RSSI: -45)\\n- Neighbor_5G (RSSI: -62)");\nlv_obj_align(scan, LV_ALIGN_BOTTOM_MID, 0, -10);' },
-            { id: 'story', icon: '📖', name: 'StoryScreen', desc: 'Історії', code: '// StoryScreen::show()\n// Історії / стрічка\nlv_obj_t* story = lv_obj_create(lv_scr_act());\n\nconst char* stories[] = {\n  "Ласкаво просимо до ePhone!",\n  "Оновлення прошивки 1.1.0",\n  "Нові ігри в магазині",\n  "Зустрічайте ePhone Pro"\n};\n\nlv_obj_t* list = lv_list_create(story);\nlv_obj_set_size(list, 280, 420);\nlv_obj_center(list);\n\nfor (int i = 0; i < 4; i++) {\n  lv_list_add_btn(list, LV_SYMBOL_NEWS, stories[i]);\n}' },
-            { id: 'archive', icon: '📦', name: 'ArchiveScreen', desc: 'Архів', code: '// ArchiveScreen::show()\n// Архів файлів\nlv_obj_t* archive = lv_obj_create(lv_scr_act());\n\nlv_obj_t* title = lv_label_create(archive);\nlv_label_set_text(title, "📦 Архів");\nlv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);\n\nconst char* files[] = {"photo_001.jpg", "notes.txt", "backup.bin", "config.json"};\n\nfor (int i = 0; i < 4; i++) {\n  lv_obj_t* btn = lv_btn_create(archive);\n  lv_obj_set_size(btn, 260, 40);\n  lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 10, 50 + i * 50);\n  \n  lv_obj_t* lbl = lv_label_create(btn);\n  lv_label_set_text(lbl, files[i]);\n  lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 10, 0);\n}' },
-            { id: 'calibration', icon: '📐', name: 'CalibrationScreen', desc: 'Калібрування', code: '// CalibrationScreen::show()\n// Калібрування сенсора\nlv_obj_t* cal = lv_obj_create(lv_scr_act());\n\nlv_obj_t* label = lv_label_create(cal);\nlv_label_set_text(label, "Натисніть на ціль");\nlv_obj_align(label, LV_ALIGN_TOP_MID, 0, 20);\n\nlv_obj_t* target = lv_obj_create(cal);\nlv_obj_set_size(target, 20, 20);\nlv_obj_set_style_bg_color(target, lv_color_hex(0x00e676), 0);\nlv_obj_align(target, LV_ALIGN_TOP_LEFT, 20, 60);\n\nlv_obj_t* progress = lv_bar_create(cal);\nlv_obj_set_size(progress, 280, 20);\nlv_obj_align(progress, LV_ALIGN_BOTTOM_MID, 0, -30);\nlv_bar_set_value(progress, 25, LV_ANIM_ON);' },
-            { id: 'games', icon: '🎮', name: 'GamesScreen', desc: 'Ігри (Snake)', code: '// GamesScreen::show()\n// Меню ігор\nlv_obj_t* games = lv_obj_create(lv_scr_act());\n\nlv_obj_t* title = lv_label_create(games);\nlv_label_set_text(title, "🎮 Ігри");\nlv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);\n\nlv_obj_t* snake_btn = lv_btn_create(games);\nlv_obj_set_size(snake_btn, 200, 80);\nlv_obj_align(snake_btn, LV_ALIGN_CENTER, 0, -30);\n\nlv_obj_t* snake_lbl = lv_label_create(snake_btn);\nlv_label_set_text(snake_lbl, "🐍 Snake");\nlv_obj_center(snake_lbl);\n\nlv_obj_t* coming = lv_label_create(games);\nlv_label_set_text(coming, "Скоро: Tetris, Pong, Flappy Bird");\nlv_obj_align(coming, LV_ALIGN_BOTTOM_MID, 0, -20);' },
-            { id: 'profile', icon: '👤', name: 'ProfileScreen', desc: 'Профіль', code: '// ProfileScreen::show()\n// Профіль користувача\nlv_obj_t* profile = lv_obj_create(lv_scr_act());\n\nlv_obj_t* avatar = lv_obj_create(profile);\nlv_obj_set_size(avatar, 80, 80);\nlv_obj_set_style_radius(avatar, 40, 0);\nlv_obj_set_style_bg_color(avatar, lv_color_hex(0x00e676), 0);\nlv_obj_align(avatar, LV_ALIGN_TOP_MID, 0, 20);\n\nlv_obj_t* name = lv_label_create(profile);\nlv_label_set_text(name, "Користувач ePhone");\nlv_obj_align(name, LV_ALIGN_TOP_MID, 0, 110);\n\nlv_obj_t* email = lv_label_create(profile);\nlv_label_set_text(email, "user@emerald.inc");\nlv_obj_set_style_text_color(email, lv_color_hex(0x5a8a5a), 0);\nlv_obj_align(email, LV_ALIGN_TOP_MID, 0, 130);\n\nlv_obj_t* stats = lv_label_create(profile);\nlv_label_set_text(stats, "Пристроїв: 1\\nДодатків: 12\\nОновлень: 5");\nlv_obj_align(stats, LV_ALIGN_CENTER, 0, 0);' }
-        ];
-
-        // ========== СТАН ==========
-        let currentScreen = 'home';
-        let currentFile = 'src/main.cpp';
-
-        // ========== ФУНКЦІЇ ==========
-
-        // Показати головний екран телефону
-        function showHomeScreen() {
-            currentScreen = 'home';
-            const content = document.getElementById('phoneContent');
-            content.innerHTML = `
-                <div class="phone-apps">
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('settings')">
-                        <div class="app-icon">⚙️</div>
-                        <div class="app-label">Налаштування</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('about')">
-                        <div class="app-icon">ℹ️</div>
-                        <div class="app-label">Про нас</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('console')">
-                        <div class="app-icon">🖥️</div>
-                        <div class="app-label">Консоль</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('games')">
-                        <div class="app-icon">🎮</div>
-                        <div class="app-label">Ігри</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('spy')">
-                        <div class="app-icon">🕵️</div>
-                        <div class="app-label">Спостереження</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('profile')">
-                        <div class="app-icon">👤</div>
-                        <div class="app-label">Профіль</div>
-                    </div>
-                </div>
-                <div class="phone-dock">
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('story')">
-                        <div class="app-icon" style="width:48px;height:48px;font-size:1.2rem;">📖</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('archive')">
-                        <div class="app-icon" style="width:48px;height:48px;font-size:1.2rem;">📦</div>
-                    </div>
-                    <div class="phone-app" onclick="event.stopPropagation(); openScreen('calibration')">
-                        <div class="app-icon" style="width:48px;height:48px;font-size:1.2rem;">📐</div>
-                    </div>
-                </div>
-            `;
+        // Навігація
+        function navigate(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const page = document.getElementById('page-' + pageId);
+            if (page) page.classList.add('active');
         }
 
-        // Відкрити екран у телефоні
-        function openScreen(screenId) {
-            const screen = screens.find(s => s.id === screenId);
-            if (!screen) return;
-            currentScreen = screenId;
-            const content = document.getElementById('phoneContent');
-            content.innerHTML = `
-                <div class="screen-view">
-                    <div class="screen-back" onclick="event.stopPropagation(); showHomeScreen()">← Назад</div>
-                    <div class="screen-title">${screen.icon} ${screen.name}</div>
-                    <div style="text-align:center;padding:20px 0;color:#a0d0a0;font-size:0.75rem;">
-                        ${screen.desc}
-                    </div>
-                    <div style="padding:10px;background:rgba(0,200,80,0.05);border-radius:8px;margin-top:8px;">
-                        <div style="font-size:0.65rem;color:#5a8a5a;margin-bottom:4px;">▼ Інтерфейс екрану</div>
-                        <div style="font-size:0.7rem;color:#c0e0c0;line-height:1.6;font-family:monospace;">
-                            ${screen.code.split('\\n').slice(0, 6).join('<br>')}
-                        </div>
-                    </div>
-                </div>
-            `;
-            // Показати код екрану в панелі
-            showCode(screen.name + '.cpp', 'screens/' + screen.name + '.cpp', screen.code);
-            // Підсвітити активний екран
-            document.querySelectorAll('.screen-chip').forEach(el => el.classList.remove('active'));
-            const chip = document.querySelector(`.screen-chip[data-id="${screenId}"]`);
-            if (chip) chip.classList.add('active');
+        function goHome() {
+            navigate('home');
         }
 
-        // Показати код у панелі
-        function showCode(filename, path, code) {
-            document.getElementById('codeFilename').textContent = filename;
-            document.getElementById('codePath').textContent = path;
-            const body = document.getElementById('codeBody');
-            // Просте підсвічування синтаксису
-            let html = code
-                .replace(/&/g, '&')
-                .replace(/</g, '<')
-                .replace(/>/g, '>')
-                .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
-                .replace(/\b(#include|#define|#ifndef|#endif|void|int|bool|char|class|struct|enum|if|else|for|while|return|const|static|extern)\b/g, '<span class="keyword">$1</span>')
-                .replace(/"([^"]*)"/g, '<span class="string">"$1"</span>')
-                .replace(/\b([A-Z]\w+)\b/g, '<span class="type">$1</span>')
-                .replace(/\n/g, '<br>');
-            body.innerHTML = html;
-            // Підсвітити активний файл
-            document.querySelectorAll('.fs-file').forEach(el => el.classList.remove('active'));
-            const fileEl = document.querySelector(`.fs-file[data-path="${path}"]`);
-            if (fileEl) fileEl.classList.add('active');
-        }
+        // Toast повідомлення
+        let toastTimer;
 
-        // ========== РЕНДЕРИНГ ==========
-
-        // Файлова система
-        function renderFileSystem() {
-            const tree = document.getElementById('fsTree');
-            const structure = {
-                'src': { icon: '📁', desc: 'вихідний код', children: {
-                    'main.cpp': { icon: '📄', ext: 'cpp' },
-                    'apps': { icon: '📁', desc: 'ігри', children: {
-                        'Snake.cpp': { icon: '🐍', ext: 'cpp' },
-                        'Snake.h': { icon: '📄', ext: 'h' }
-                    }},
-                    'screens': { icon: '📁', desc: 'екрани', children: {} },
-                    'services': { icon: '📁', desc: 'сервіси', children: {
-                        'TouchManager.cpp': { icon: '📄', ext: 'cpp' },
-                        'TouchManager.h': { icon: '📄', ext: 'h' },
-                        'WiFiService.cpp': { icon: '📄', ext: 'cpp' },
-                        'WiFiService.h': { icon: '📄', ext: 'h' }
-                    }},
-                    'ui': { icon: '📁', desc: 'інтерфейс', children: {
-                        'Animations.cpp': { icon: '📄', ext: 'cpp' },
-                        'Animations.h': { icon: '📄', ext: 'h' },
-                        'UIComponents.cpp': { icon: '📄', ext: 'cpp' },
-                        'UIComponents.h': { icon: '📄', ext: 'h' },
-                        'VirtualKeyboard.cpp': { icon: '📄', ext: 'cpp' },
-                        'VirtualKeyboard.h': { icon: '📄', ext: 'h' }
-                    }}
-                }},
-                'include': { icon: '📁', desc: 'конфігурація', children: {
-                    'lv_conf.h': { icon: '⚙️', ext: 'h' }
-                }},
-                'lib': { icon: '📁', desc: 'бібліотеки', children: {} },
-                'test': { icon: '📁', desc: 'тести', children: {
-                    'touch_test.cpp': { icon: '🧪', ext: 'cpp' }
-                }},
-                'platformio.ini': { icon: '⚙️', ext: 'ini' }
-            };
-
-            function renderFolder(name, data, path) {
-                const isFolder = data.children !== undefined;
-                const div = document.createElement('div');
-                div.className = isFolder ? 'fs-folder' : 'fs-file';
-                if (!isFolder) {
-                    const filePath = path + name;
-                    div.setAttribute('data-path', filePath);
-                    div.innerHTML = `<span class="file-icon">${data.icon}</span> ${name} <span class="file-ext">.${data.ext}</span>`;
-                    div.onclick = (e) => {
-                        e.stopPropagation();
-                        const fileData = files[filePath];
-                        if (fileData) {
-                            showCode(fileData.name, fileData.path, fileData.code);
-                        }
-                    };
-                } else {
-                    const isOpen = name === 'src';
-                    div.innerHTML = `
-                        <div class="fs-folder-header" onclick="this.parentElement.querySelector('.fs-children').classList.toggle('open'); this.querySelector('.arrow').classList.toggle('open')">
-                            <span class="arrow ${isOpen ? 'open' : ''}">▶</span>
-                            <span class="folder-icon">${data.icon}</span>
-                            <span class="folder-name">${name}/</span>
-                            <span class="folder-desc">${data.desc || ''}</span>
-                        </div>
-                        <div class="fs-children ${isOpen ? 'open' : ''}">
-                            ${Object.keys(data.children || {}).map(childName => {
-                                const childPath = path + name + '/';
-                                const child = data.children[childName];
-                                if (child.children) {
-                                    const subDiv = document.createElement('div');
-                                    // Рекурсивно для підпапок
-                                    return renderFolder(childName, child, childPath).outerHTML;
-                                } else {
-                                    const filePath = childPath + childName;
-                                    const fileData = files[filePath];
-                                    return `<div class="fs-file" data-path="${filePath}" onclick="event.stopPropagation(); showCode('${fileData ? fileData.name : childName}', '${filePath}', \`${(fileData ? fileData.code : '// Файл не знайдено').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-                                        <span class="file-icon">${child.icon}</span> ${childName}
-                                        <span class="file-ext">.${child.ext}</span>
-                                    </div>`;
-                                }
-                            }).join('')}
-                        </div>
-                    `;
-                }
-                return div;
-            }
-
-            tree.innerHTML = '';
-            Object.keys(structure).forEach(key => {
-                tree.appendChild(renderFolder(key, structure[key], ''));
-            });
-        }
-
-        // Екрани прошивки
-        function renderScreens() {
-            const grid = document.getElementById('screensGrid');
-            grid.innerHTML = screens.map(s => `
-                <div class="screen-chip" data-id="${s.id}" onclick="openScreen('${s.id}')">
-                    <span class="chip-icon">${s.icon}</span>
-                    ${s.name}
-                    <div style="font-size:0.65rem;color:#5a8a5a;margin-top:2px;">${s.desc}</div>
-                </div>
-            `).join('');
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
         }
 
         // Оновлення часу
@@ -755,15 +745,10 @@
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('phoneTime').textContent = h + ':' + m;
+            document.getElementById('time').textContent = h + ':' + m;
         }
 
-        // ========== ІНІЦІАЛІЗАЦІЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
-            showHomeScreen();
-            renderFileSystem();
-            renderScreens();
-            showCode('main.cpp', 'src/main.cpp', files['src/main.cpp'].code);
             updateTime();
             setInterval(updateTime, 10000);
         });
