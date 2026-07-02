@@ -252,6 +252,63 @@
             border: 1px solid rgba(255, 80, 80, 0.3);
         }
 
+        /* Рейтинг */
+        .rating-section {
+            text-align: center;
+            margin: 2rem 0 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 200, 80, 0.04);
+            border: 1px solid rgba(0, 200, 80, 0.15);
+            border-radius: 12px;
+        }
+        .rating-section h3 {
+            color: #00e676;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .rating-section p {
+            color: #a0d0a0;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 2.2rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .stars .star {
+            color: #3a5a3a;
+            transition: color 0.2s, transform 0.15s;
+        }
+        .stars .star:hover {
+            transform: scale(1.2);
+        }
+        .stars .star.active {
+            color: #ffd700;
+        }
+        .stars .star.active ~ .star {
+            color: #3a5a3a;
+        }
+        .stars:hover .star {
+            color: #ffd700;
+        }
+        .stars .star:hover ~ .star {
+            color: #3a5a3a !important;
+        }
+        .rating-result {
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            color: #a0d0a0;
+            min-height: 1.5rem;
+        }
+        .rating-result .highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 1.5rem;
@@ -399,6 +456,19 @@
             </div>
         </div>
 
+        <div class="rating-section">
+            <h3>⭐ Оцініть нас</h3>
+            <p>Наскільки вам подобається наш сайт?</p>
+            <div class="stars" id="stars">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+            <div class="rating-result" id="ratingResult"></div>
+        </div>
+
         <div class="contact">
             <p>© 2026 Emerald Inc. — <a href="mailto:hello@emerald.inc">hello@emerald.inc</a></p>
 
@@ -424,6 +494,62 @@
     <script>
         function toggleCard(card) {
             card.classList.toggle('open');
+        }
+
+        // Рейтинг зірочками
+        const stars = document.querySelectorAll('.stars .star');
+        const ratingResult = document.getElementById('ratingResult');
+        let currentRating = 0;
+
+        const messages = {
+            1: '😕 Дуже погано',
+            2: '🙁 Погано',
+            3: '😐 Нормально',
+            4: '😊 Добре',
+            5: '🤩 Чудово!'
+        };
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                currentRating = value;
+                
+                stars.forEach(s => s.classList.remove('active'));
+                for (let i = 0; i < value; i++) {
+                    stars[i].classList.add('active');
+                }
+
+                ratingResult.innerHTML = `Ваша оцінка: <span class="highlight">${value} ${'★'.repeat(value)}</span> — ${messages[value]}`;
+                
+                // Зберігаємо в localStorage
+                localStorage.setItem('emerald_rating', value);
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const value = parseInt(this.dataset.value);
+                stars.forEach(s => s.classList.remove('active'));
+                for (let i = 0; i < value; i++) {
+                    stars[i].classList.add('active');
+                }
+            });
+
+            star.addEventListener('mouseleave', function() {
+                stars.forEach(s => s.classList.remove('active'));
+                for (let i = 0; i < currentRating; i++) {
+                    stars[i].classList.add('active');
+                }
+            });
+        });
+
+        // Відновлюємо збережену оцінку
+        const savedRating = localStorage.getItem('emerald_rating');
+        if (savedRating) {
+            const value = parseInt(savedRating);
+            currentRating = value;
+            for (let i = 0; i < value; i++) {
+                stars[i].classList.add('active');
+            }
+            ratingResult.innerHTML = `Ваша оцінка: <span class="highlight">${value} ${'★'.repeat(value)}</span> — ${messages[value]}`;
         }
 
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
