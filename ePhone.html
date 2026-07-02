@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ePhone — прошивка | Emerald Inc.</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a2e0a 0%, #0d3d0d 50%, #0a2e0a 100%);
+            color: #e0f0e0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(13, 61, 13, 0.85);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 0 40px rgba(0, 200, 80, 0.1);
+            border: 1px solid rgba(0, 200, 80, 0.2);
+        }
+        h1 {
+            color: #00e676;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .back {
+            display: inline-block;
+            color: #a0d0a0;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .back:hover { color: #00e676; }
+        .file-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        .file-list li {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(0, 200, 80, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-list li:last-child { border-bottom: none; }
+        .file-list .name { color: #c0e0c0; font-size: 0.9rem; }
+        .file-list .ext { color: #00e676; font-size: 0.75rem; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: rgba(0, 200, 80, 0.06);
+            border: 1px solid rgba(0, 200, 80, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .num {
+            font-size: 1.5rem;
+            color: #00e676;
+            font-weight: 700;
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: #a0d0a0;
+            margin-top: 0.3rem;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 200, 80, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #b0d8b0;
+            line-height: 1.6;
+        }
+        .code-block .comment { color: #5a8a5a; }
+        .code-block .keyword { color: #00e676; }
+        .code-block .string { color: #ffd700; }
+        .code-block .func { color: #48bfe3; }
+        .code-block .type { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/EMERALD.inc/index.html" class="back">← Назад до Emerald Inc.</a>
+        <h1>📱 ePhone — прошивка</h1>
+        <p style="color: #a0d0a0; margin-bottom: 1.5rem;">Флагманський смартфон від компанії Emerald — структура прошивки</p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="num">C++</div>
+                <div class="label">Мова програмування</div>
+            </div>
+            <div class="stat-card">
+                <div class="num">LVGL</div>
+                <div class="label">Графічна бібліотека</div>
+            </div>
+            <div class="stat-card">
+                <div class="num">ESP32</div>
+                <div class="label">Мікроконтролер</div>
+            </div>
+            <div class="stat-card">
+                <div class="num">TFT</div>
+                <div class="label">Кольоровий екран</div>
+            </div>
+        </div>
+
+        <h2 style="color: #00e676; font-size: 1.1rem; margin-bottom: 0.5rem;">📂 Структура файлів</h2>
+        <ul class="file-list">
+            <li><span class="name">📁 src/</span><span class="ext">вихідний код</span></li>
+            <li><span class="name">　📁 apps/ — Snake.cpp, Snake.h</span><span class="ext">ігри</span></li>
+            <li><span class="name">　📁 screens/ — Boot, Menu, Settings, About, Console, Spy, Story, Archive, Calibration, Games, Profile</span><span class="ext">екрани</span></li>
+            <li><span class="name">　📁 services/ — TouchManager, WiFiService</span><span class="ext">сервіси</span></li>
+            <li><span class="name">　📁 ui/ — Animations, UIComponents, VirtualKeyboard</span><span class="ext">інтерфейс</span></li>
+            <li><span class="name">📁 include/ — lv_conf.h</span><span class="ext">конфігурація</span></li>
+            <li><span class="name">📁 lib/</span><span class="ext">бібліотеки</span></li>
+            <li><span class="name">📁 test/ — touch_test</span><span class="ext">тести</span></li>
+            <li><span class="name">platformio.ini</span><span class="ext">конфігурація збірки</span></li>
+        </ul>
+
+        <h2 style="color: #00e676; font-size: 1.1rem; margin: 1.5rem 0 0.5rem;">💻 Основний код (main.cpp)</h2>
+        <div class="code-block">
+            <span class="comment">// ePhone — головний файл прошивки</span>
+            <br><span class="keyword">#include</span> <lvgl.h>
+            <br><span class="keyword">#include</span> <TFT_eSPI.h>
+            <br><span class="keyword">#include</span> <span class="string">"screens/BootScreen.h"</span>
+            <br><span class="keyword">#include</span> <span class="string">"screens/MenuScreen.h"</span>
+            <br><span class="keyword">#include</span> <span class="string">"services/TouchManager.h"</span>
+            <br><br><span class="type">void</span> <span class="func">setup</span>() {
+            <br>&nbsp;&nbsp;Serial.begin(115200);
+            <br>&nbsp;&nbsp;lv_init();
+            <br>&nbsp;&nbsp;tft.begin();
+            <br>&nbsp;&nbsp;touch.begin();
+            <br>&nbsp;&nbsp;BootScreen::show();
+            <br>&nbsp;&nbsp;MenuScreen::show();
+            <br>}
+            <br><br><span class="type">void</span> <span class="func">loop</span>() {
+            <br>&nbsp;&nbsp;lv_timer_handler();
+            <br>&nbsp;&nbsp;touch.update();
+            <br>&nbsp;&nbsp;delay(5);
+            <br>}
+        </div>
+
+        <h2 style="color: #00e676; font-size: 1.1rem; margin: 1.5rem 0 0.5rem;">📋 Екрани прошивки</h2>
+        <div class="code-block">
+            <span class="comment">// Доступні екрани:</span>
+            <br>🔹 <span class="func">BootScreen</span> — завантаження
+            <br>🔹 <span class="func">MenuScreen</span> — головне меню
+            <br>🔹 <span class="func">SettingsScreen</span> — налаштування
+            <br>🔹 <span class="func">AboutScreen</span> — про пристрій
+            <br>🔹 <span class="func">ConsoleScreen</span> — консоль
+            <br>🔹 <span class="func">SpyScreen</span> — шпигунський режим
+            <br>🔹 <span class="func">StoryScreen</span> — історії
+            <br>🔹 <span class="func">ArchiveScreen</span> — архів
+            <br>🔹 <span class="func">CalibrationScreen</span> — калібрування
+            <br>🔹 <span class="func">GamesScreen</span> — ігри (Snake)
+            <br>🔹 <span class="func">ProfileScreen</span> — профіль
+        </div>
+
+        <p style="text-align: center; margin-top: 2rem; color: #a0d0a0; font-size: 0.85rem;">
+            ePhone — продукт компанії <a href="/EMERALD.inc/index.html" style="color: #00e676; text-decoration: none;">Emerald Inc.</a>
+        </p>
+    </div>
+</body>
+</html>
