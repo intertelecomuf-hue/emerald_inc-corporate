@@ -85,10 +85,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
 
     def log_message(self, format, *args):
-        if len(args) >= 3:
-            print(f"[SERVER] {args[0]} {args[1]} {args[2]}")
-        else:
-            print(f"[SERVER] {' '.join(str(a) for a in args)}")
+        try:
+            if len(args) >= 3:
+                print(f"[SERVER] {args[0]} {args[1]} {args[2]}")
+            else:
+                print(f"[SERVER] {' '.join(str(a) for a in args)}")
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     os.chdir(PROJECTS_DIR)
