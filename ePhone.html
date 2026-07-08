@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ePhone - симулятор | Emerald Inc.</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a2e0a 0%, #0d3d0d 50%, #0a2e0a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        .back-link {
+            color: #a0d0a0;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { color: #00e676; }
+
+        /* Телефон */
+        .phone {
+            width: 320px;
+            height: 640px;
+            background: #000;
+            border: 3px solid #1a3a1a;
+            border-radius: 44px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(0,200,80,0.15), inset 0 0 40px rgba(0,0,0,0.7);
+        }
+        .phone .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 28px;
+            background: #000;
+            border-radius: 0 0 16px 16px;
+            z-index: 10;
+        }
+        .phone .notch::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            padding: 36px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #0d2d0d 0%, #0a1a0a 100%);
+            position: relative;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 4px 8px;
+            font-size: 11px;
+            color: #a0d0a0;
+            font-weight: 600;
+        }
+        .status-bar .time { color: #fff; }
+        .status-bar .icons { display: flex; gap: 4px; }
+
+        /* Екран */
+        .display {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .page.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0 8px;
+            border-bottom: 1px solid rgba(0,200,80,0.12);
+            margin-bottom: 8px;
+        }
+        .page-header .back-btn {
+            font-size: 18px;
+            cursor: pointer;
+            color: #00e676;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .page-header .back-btn:hover { background: rgba(0,200,80,0.1); }
+        .page-header .title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Іконки додатків */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 8px 4px;
+        }
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+        .app-icon:hover { background: rgba(0,200,80,0.08); }
+        .app-icon:active { transform: scale(0.92); }
+        .app-icon .icon-box {
+            width: 52px;
+            height: 52px;
+            background: rgba(0,200,80,0.1);
+            border: 1px solid rgba(0,200,80,0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .app-icon .label {
+            font-size: 10px;
+            color: #c0e0c0;
+            text-align: center;
+        }
+
+        /* Док */
+        .dock {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 8px 0 4px;
+            border-top: 1px solid rgba(0,200,80,0.12);
+        }
+        .dock .app-icon .icon-box {
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+        }
+
+        /* Список */
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            color: #e0f0e0;
+        }
+        .list-item:hover { background: rgba(0,200,80,0.08); }
+        .list-item:active { background: rgba(0,200,80,0.15); }
+        .list-item .li-icon { font-size: 18px; width: 28px; text-align: center; }
+        .list-item .li-arrow { margin-left: auto; color: #5a8a5a; font-size: 14px; }
+        .list-item .li-right { margin-left: auto; color: #5a8a5a; font-size: 11px; }
+
+        /* Деталі */
+        .detail {
+            padding: 12px;
+            text-align: center;
+        }
+        .detail .big-icon { font-size: 40px; margin-bottom: 8px; }
+        .detail .d-title { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 4px; }
+        .detail .d-sub { font-size: 12px; color: #a0d0a0; margin-bottom: 12px; }
+        .detail .d-info { font-size: 11px; color: #5a8a5a; line-height: 1.6; }
+
+        /* Кнопка */
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border: none;
+            border-radius: 10px;
+            color: #0a2e0a;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn:active { transform: scale(0.96); }
+
+        /* Індикатор */
+        .indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .indicator.on { background: #00e676; }
+        .indicator.off { background: #5a5a5a; }
+
+        /* Повідомлення */
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,200,80,0.15);
+            border: 1px solid rgba(0,200,80,0.3);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #00e676;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+
+        /* Індикатор сторінок */
+        .page-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px 0;
+        }
+        .page-dots .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3a5a3a;
+            transition: background 0.2s;
+        }
+        .page-dots .dot.active { background: #00e676; }
+
+        @media (max-width: 400px) {
+            .phone { width: 280px; height: 560px; border-radius: 36px; }
+            .screen { padding: 32px 10px 10px; }
+            .app-icon .icon-box { width: 44px; height: 44px; font-size: 20px; }
+            .apps-grid { gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <a href="/EMERALD.inc/index.html" class="back-link">< Emerald Inc.</a>
+        <div class="phone" id="phone">
+            <div class="notch"></div>
+            <div class="screen">
+                <div class="status-bar">
+                    <span class="time" id="time">12:00</span>
+                    <span class="icons">📶 🔋</span>
+                </div>
+                <div class="display" id="display">
+                    <!-- Головний екран -->
+                    <div class="page active" id="page-home">
+                        <div class="apps-grid">
+                            <div class="app-icon" onclick="navigate('settings')">
+                                <div class="icon-box">⚙️</div>
+                                <div class="label">Налаштування</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('about')">
+                                <div class="icon-box">ℹ️</div>
+                                <div class="label">Про телефон</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('console')">
+                                <div class="icon-box">🖥️</div>
+                                <div class="label">Консоль</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('games')">
+                                <div class="icon-box">🎮</div>
+                                <div class="label">Ігри</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('spy')">
+                                <div class="icon-box">🕵️</div>
+                                <div class="label">Спостереження</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('profile')">
+                                <div class="icon-box">👤</div>
+                                <div class="label">Профіль</div>
+                            </div>
+                        </div>
+                        <div class="page-dots">
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <div class="dock">
+                            <div class="app-icon" onclick="navigate('story')">
+                                <div class="icon-box">📖</div>
+                                <div class="label">Історії</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('archive')">
+                                <div class="icon-box">📦</div>
+                                <div class="label">Архів</div>
+                            </div>
+                            <div class="app-icon" onclick="navigate('calibrate')">
+                                <div class="icon-box">📐</div>
+                                <div class="label">Калібр.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Налаштування -->
+                    <div class="page" id="page-settings">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">⚙️ Налаштування</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="navigate('wifi')">
+                                <span class="li-icon">📶</span> Wi-Fi
+                                <span class="li-right">Дім</span>
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('bluetooth')">
+                                <span class="li-icon">🔵</span> Bluetooth
+                                <span class="li-right">Вимк.</span>
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('display-settings')">
+                                <span class="li-icon">☀️</span> Дисплей
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('sound')">
+                                <span class="li-icon">🔊</span> Звук
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('battery')">
+                                <span class="li-icon">🔋</span> Акумулятор
+                                <span class="li-right">85%</span>
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('storage')">
+                                <span class="li-icon">💾</span> Пам'ять
+                                <span class="li-right">6.2/32 ГБ</span>
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="navigate('security')">
+                                <span class="li-icon">🔒</span> Безпека
+                                <span class="li-arrow">></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wi-Fi -->
+                    <div class="page" id="page-wifi">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">📶 Wi-Fi</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Підключення до Home_Network...')">
+                                <span class="li-icon">📶</span> Home_Network
+                                <span class="li-right"><span class="indicator on"></span></span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Neighbor_5G...')">
+                                <span class="li-icon">📶</span> Neighbor_5G
+                                <span class="li-right"></span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Office_Guest...')">
+                                <span class="li-icon">📶</span> Office_Guest
+                                <span class="li-right"></span>
+                            </div>
+                            <div class="list-item" onclick="toast('Підключення до Public_Free...')">
+                                <span class="li-icon">📶</span> Public_Free
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bluetooth -->
+                    <div class="page" id="page-bluetooth">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">🔵 Bluetooth</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🔵</div>
+                            <div class="d-title">Bluetooth</div>
+                            <div class="d-sub">Вимкнено</div>
+                            <button class="btn" onclick="toast(' Bluetooth увімкнено. Пошук пристроїв...')">Увімкнути</button>
+                        </div>
+                    </div>
+
+                    <!-- Дисплей -->
+                    <div class="page" id="page-display-settings">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">☀️ Дисплей</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Яскравість: 75%')">
+                                <span class="li-icon">☀️</span> Яскравість
+                                <span class="li-right">75%</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Темна тема активована')">
+                                <span class="li-icon">🌙</span> Темна тема
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Автоповорот: увімкнено')">
+                                <span class="li-icon">🔄</span> Автоповорот
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Звук -->
+                    <div class="page" id="page-sound">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">🔊 Звук</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast('Режим: Дзвінок')">
+                                <span class="li-icon">🔔</span> Режим
+                                <span class="li-right">Дзвінок</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Гучність: 70%')">
+                                <span class="li-icon">🔊</span> Гучність
+                                <span class="li-right">70%</span>
+                            </div>
+                            <div class="list-item" onclick="toast('Вібрація: увімкнено')">
+                                <span class="li-icon">📳</span> Вібрація
+                                <span class="li-right">Увімк.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Акумулятор -->
+                    <div class="page" id="page-battery">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">🔋 Акумулятор</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🔋</div>
+                            <div class="d-title">85%</div>
+                            <div class="d-sub">Залишилось ~8 год</div>
+                            <div class="d-info">Налаштування живлення<br>Режим економії: Вимк.</div>
+                            <button class="btn" onclick="toast(' Режим економії увімкнено')">Економія</button>
+                        </div>
+                    </div>
+
+                    <!-- Пам'ять -->
+                    <div class="page" id="page-storage">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">💾 Пам'ять</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">💾</div>
+                            <div class="d-title">6.2 / 32 ГБ</div>
+                            <div class="d-sub">Використано 19%</div>
+                            <div class="d-info">
+                                 Зображення: 2.1 ГБ<br>
+                                 Аудіо: 0.8 ГБ<br>
+                                 Додатки: 1.5 ГБ<br>
+                                 Інше: 1.8 ГБ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Безпека -->
+                    <div class="page" id="page-security">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('settings')"><</div>
+                            <div class="title">🔒 Безпека</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast(' Блокування екрану: PIN')">
+                                <span class="li-icon">🔐</span> Блокування
+                                <span class="li-right">PIN</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Відбиток пальця додано')">
+                                <span class="li-icon">🖐️</span> Відбиток
+                                <span class="li-right">1/3</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Шифрування активовано')">
+                                <span class="li-icon">🔑</span> Шифрування
+                                <span class="li-right">Актив.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Про телефон -->
+                    <div class="page" id="page-about">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">ℹ️ Про телефон</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">📱</div>
+                            <div class="d-title">ePhone v1.0</div>
+                            <div class="d-sub">Emerald Inc.</div>
+                            <div class="d-info">
+                                ESP32 @ 240MHz<br>
+                                320×480 TFT дисплей<br>
+                                LVGL v8.3<br>
+                                Прошивка: 1.0.0<br>
+                                Збірка: #42
+                            </div>
+                            <button class="btn" onclick="toast(' Перевірка оновлень...')">Перевірити оновлення</button>
+                        </div>
+                    </div>
+
+                    <!-- Консоль -->
+                    <div class="page" id="page-console">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">🖥️ Консоль</div>
+                        </div>
+                        <div class="detail">
+                            <div class="d-info" style="text-align:left;font-family:monospace;font-size:11px;color:#00e676;background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;">
+                                > ePhone v1.0<br>
+                                > Система готова<br>
+                                > Введіть команду...<br>
+                                > <span style="animation:blink 1s infinite;">_</span>
+                            </div>
+                            <div style="margin-top:8px;display:flex;gap:6px;">
+                                <button class="btn" style="flex:1;font-size:11px;padding:8px;" onclick="toast(' Список команд: help, info, status, reboot')">help</button>
+                                <button class="btn" style="flex:1;font-size:11px;padding:8px;" onclick="toast(' Статус: OK | RAM: 45% | CPU: 12%')">status</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ігри -->
+                    <div class="page" id="page-games">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">🎮 Ігри</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="navigate('snake-game')">
+                                <span class="li-icon">🐍</span> Snake
+                                <span class="li-arrow">></span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Tetris - скоро!')">
+                                <span class="li-icon">🧱</span> Tetris
+                                <span class="li-right">Скоро</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Pong - скоро!')">
+                                <span class="li-icon">🏓</span> Pong
+                                <span class="li-right">Скоро</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Snake гра -->
+                    <div class="page" id="page-snake-game">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="navigate('games')"><</div>
+                            <div class="title">🐍 Snake</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🐍</div>
+                            <div class="d-title">Snake</div>
+                            <div class="d-sub">Класична гра</div>
+                            <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                                <button class="btn" style="font-size:11px;padding:8px 16px;" onclick="toast(' Гра починається!')">Старт</button>
+                                <button class="btn" style="font-size:11px;padding:8px 16px;background:rgba(0,200,80,0.15);color:#00e676;" onclick="toast(' Рекорд: 42')">Рекорди</button>
+                            </div>
+                            <div class="d-info" style="margin-top:8px;">
+                                 Керування: < ↑ → ↓<br>
+                                 Збирай їжу та рост
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Спостереження -->
+                    <div class="page" id="page-spy">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">🕵️ Спостереження</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">🕵️</div>
+                            <div class="d-title">Режим спостереження</div>
+                            <div class="d-sub">Всі системи активні</div>
+                            <div class="d-info" style="text-align:left;">
+                                 Камера: <span style="color:#00e676;">OFF</span><br>
+                                 Мікрофон: <span style="color:#00e676;">OFF</span><br>
+                                 GPS: 48.8566, 2.3522<br>
+                                 Wi-Fi сканування...
+                            </div>
+                            <button class="btn" onclick="toast(' Сканування мережі... Знайдено 3 пристрої')">Сканувати</button>
+                        </div>
+                    </div>
+
+                    <!-- Профіль -->
+                    <div class="page" id="page-profile">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">👤 Профіль</div>
+                        </div>
+                        <div class="detail">
+                            <div style="width:64px;height:64px;background:linear-gradient(135deg,#00e676,#00c853);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 8px;"></div>
+                            <div class="d-title">Користувач ePhone</div>
+                            <div class="d-sub">user@emerald.inc</div>
+                            <div class="d-info">
+                                 Пристроїв: 1<br>
+                                 Додатків: 12<br>
+                                 Оновлень: 5
+                            </div>
+                            <button class="btn" onclick="toast(' Профіль оновлено')">Редагувати</button>
+                        </div>
+                    </div>
+
+                    <!-- Історії -->
+                    <div class="page" id="page-story">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">📖 Історії</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast(' Ласкаво просимо до ePhone!')">
+                                <span class="li-icon">👋</span> Ласкаво просимо!
+                                <span class="li-right">2 год тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Оновлення прошивки 1.1.0')">
+                                <span class="li-icon">🔄</span> Оновлення 1.1.0
+                                <span class="li-right">1 день тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Нові ігри в магазині')">
+                                <span class="li-icon">🎮</span> Нові ігри
+                                <span class="li-right">3 дні тому</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Зустрічайте ePhone Pro')">
+                                <span class="li-icon">📱</span> ePhone Pro
+                                <span class="li-right">1 тиж. тому</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Архів -->
+                    <div class="page" id="page-archive">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">📦 Архів</div>
+                        </div>
+                        <div class="list">
+                            <div class="list-item" onclick="toast(' Відкриваю photo_001.jpg')">
+                                <span class="li-icon">🖼️</span> photo_001.jpg
+                                <span class="li-right">2.3 МБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Відкриваю notes.txt')">
+                                <span class="li-icon">📄</span> notes.txt
+                                <span class="li-right">12 КБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Відкриваю backup.bin')">
+                                <span class="li-icon">💾</span> backup.bin
+                                <span class="li-right">128 МБ</span>
+                            </div>
+                            <div class="list-item" onclick="toast(' Відкриваю config.json')">
+                                <span class="li-icon">⚙️</span> config.json
+                                <span class="li-right">4 КБ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Калібрування -->
+                    <div class="page" id="page-calibrate">
+                        <div class="page-header">
+                            <div class="back-btn" onclick="goHome()"><</div>
+                            <div class="title">📐 Калібрування</div>
+                        </div>
+                        <div class="detail">
+                            <div class="big-icon">📐</div>
+                            <div class="d-title">Калібрування сенсора</div>
+                            <div class="d-sub">Натисніть на ціль</div>
+                            <div style="width:200px;height:200px;margin:12px auto;background:rgba(0,200,80,0.05);border:1px solid rgba(0,200,80,0.2);border-radius:12px;position:relative;">
+                                <div style="position:absolute;top:20px;left:30px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast(' Ціль 1/5 - 20%')"></div>
+                                <div style="position:absolute;top:80px;left:140px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast(' Ціль 2/5 - 40%')"></div>
+                                <div style="position:absolute;top:150px;left:50px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast(' Ціль 3/5 - 60%')"></div>
+                                <div style="position:absolute;top:40px;left:160px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast(' Ціль 4/5 - 80%')"></div>
+                                <div style="position:absolute;top:160px;left:160px;width:16px;height:16px;background:#00e676;border-radius:50%;cursor:pointer;" onclick="toast(' Ціль 5/5 - 100%')"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /display -->
+
+                <div class="toast" id="toast"></div>
+            </div><!-- /screen -->
+        </div><!-- /phone -->
+    </div><!-- /wrapper -->
+
+    <script>
+        // Навігація
+        function navigate(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const page = document.getElementById('page-' + pageId);
+            if (page) page.classList.add('active');
+        }
+
+        function goHome() {
+            navigate('home');
+        }
+
+        // Toast повідомлення
+        let toastTimer;
+
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+        }
+
+        // Оновлення часу
+        function updateTime() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('time').textContent = h + ':' + m;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 10000);
+        });
+    </script>
+</body>
+</html>

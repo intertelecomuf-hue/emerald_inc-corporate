@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emerald Pay (ePay)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        header {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 0;
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00e676;
+        }
+        .logo span { color: #69f0ae; }
+        .nav-buttons { display: flex; gap: 10px; }
+        
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card h2 { color: #69f0ae; margin-bottom: 16px; }
+        
+        /* Forms */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #00e676; }
+        input::placeholder { color: rgba(255,255,255,0.4); }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #00e676;
+            color: #0a1628;
+        }
+        .btn-primary:hover { background: #69f0ae; transform: translateY(-1px); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-danger {
+            background: #ff5252;
+            color: #fff;
+        }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th { color: #69f0ae; font-weight: 600; }
+        
+        /* Status badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-pending { background: #ffd740; color: #333; }
+        .badge-completed { background: #00e676; color: #0a1628; }
+        .badge-failed { background: #ff5252; color: #fff; }
+        .badge-refunded { background: #448aff; color: #fff; }
+        
+        /* Auth forms */
+        .auth-container {
+            max-width: 400px;
+            margin: 60px auto;
+        }
+        .auth-container .card { text-align: center; }
+        .auth-container .btn { width: 100%; margin-top: 10px; }
+        .auth-link {
+            color: #69f0ae;
+            cursor: pointer;
+            margin-top: 12px;
+            display: inline-block;
+        }
+        .auth-link:hover { text-decoration: underline; }
+        
+        /* Dashboard */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #69f0ae;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+        }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* Error/Success messages */
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .message.error { background: rgba(255,82,82,0.2); border: 1px solid #ff5252; display: block; }
+        .message.success { background: rgba(0,230,118,0.2); border: 1px solid #00e676; display: block; }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: none;
+            color: rgba(255,255,255,0.6);
+        }
+        .tab.active {
+            background: rgba(255,255,255,0.08);
+            color: #69f0ae;
+            border-color: #69f0ae;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: #1a2a4a;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .modal h2 { margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">💎 <span>Emerald</span> Pay</div>
+            <div class="nav-buttons" id="navButtons">
+                <button class="btn btn-secondary" onclick="showAuth('login')">Увійти</button>
+                <button class="btn btn-primary" onclick="showAuth('register')">Реєстрація</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Auth Section -->
+        <div id="authSection" class="auth-container">
+            <div class="card" id="loginForm">
+                <h2>З поверненням</h2>
+                <div id="loginMessage" class="message"></div>
+                <input type="email" id="loginEmail" placeholder="Електронна пошта" required>
+                <input type="password" id="loginPassword" placeholder="Пароль" required>
+                <button class="btn btn-primary" onclick="login()">Увійти</button>
+                <div class="auth-link" onclick="showAuth('register')">Немає акаунта? Зареєструватися</div>
+            </div>
+            <div class="card hidden" id="registerForm">
+                <h2>Створити акаунт</h2>
+                <div id="registerMessage" class="message"></div>
+                <input type="text" id="regName" placeholder="Повне ім'я">
+                <input type="email" id="regEmail" placeholder="Електронна пошта" required>
+                <input type="password" id="regPassword" placeholder="Пароль" required>
+                <button class="btn btn-primary" onclick="register()">Створити акаунт</button>
+                <div class="auth-link" onclick="showAuth('login')">Вже маєте акаунт? Увійти</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="hidden">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="value" id="totalPayments">0</div>
+                    <div class="label">Всього платежів</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="completedPayments">0</div>
+                    <div class="label">Завершено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="pendingPayments">0</div>
+                    <div class="label">Очікується</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('payments', this)">Мої платежі</div>
+                <div class="tab" onclick="switchTab('create', this)">Новий платіж</div>
+                <div class="tab hidden" id="adminTab" onclick="switchTab('admin', this)">Адмін</div>
+            </div>
+
+            <!-- Payments List -->
+            <div id="paymentsTab" class="card">
+                <h2>Історія платежів</h2>
+                <div id="paymentsMessage" class="message"></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Сума</th>
+                            <th>Валюта</th>
+                            <th>Статус</th>
+                            <th>Опис</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.4);">Ще немає платежів</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Create Payment -->
+            <div id="createTab" class="card hidden">
+                <h2>Створити новий платіж</h2>
+                <div id="createMessage" class="message"></div>
+                <input type="number" id="paymentAmount" placeholder="Сума" step="0.01" min="0.01" required>
+                <select id="paymentCurrency">
+                    <option value="USD">USD - Долар США</option>
+                    <option value="EUR">EUR - Євро</option>
+                    <option value="UAH">UAH - Українська гривня</option>
+                </select>
+                <textarea id="paymentDescription" placeholder="Опис (необов'язково)" rows="3"></textarea>
+                <button class="btn btn-primary" onclick="createPayment()">Створити платіж</button>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="adminTab" class="card hidden">
+                <h2>Панель адміністратора</h2>
+                <div id="adminMessage" class="message"></div>
+                <h3 style="color:#69f0ae;margin-bottom:12px;">Всі платежі</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Користувач</th>
+                            <th>Сума</th>
+                            <th>Статус</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminPaymentsBody">
+                        <tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.4);">Завантаження...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let token = localStorage.getItem('epay_token');
+        let currentUser = null;
+
+        // Initialize
+        if (token) {
+            loadDashboard();
+        }
+
+        // Auth functions
+        function showAuth(form) {
+            document.getElementById('loginForm').classList.toggle('hidden', form !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', form !== 'register');
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const msg = document.getElementById('loginMessage');
+            
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    msg.className = 'message error';
+                    msg.textContent = data.detail || 'Помилка входу';
+                    return;
+                }
+                
+                token = data.access_token;
+                currentUser = data.user;
+                localStorage.setItem('epay_token', token);
+                loadDashboard();
+            } catch (err) {
+                msg.className = 'message error';
+                msg.textContent = 'Помилка з\'єднання';
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const fullName = document.getElementById('regName').value;
+            const msg = document.getElementById('registerMessage');
+            
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, full_name: fullName || null })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    msg.className = 'message error';
+                    msg.textContent = data.detail || 'Помилка реєстрації';
+                    return;
+                }
+                
+                token = data.access_token;
+                currentUser = data.user;
+                localStorage.setItem('epay_token', token);
+                loadDashboard();
+            } catch (err) {
+                msg.className = 'message error';
+                msg.textContent = 'Помилка з\'єднання';
+            }
+        }
+
+        function logout() {
+            token = null;
+            currentUser = null;
+            localStorage.removeItem('epay_token');
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('navButtons').innerHTML = `
+                <button class="btn btn-secondary" onclick="showAuth('login')">Увійти</button>
+                <button class="btn btn-primary" onclick="showAuth('register')">Реєстрація</button>
+            `;
+        }
+
+        // Dashboard
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) { logout(); return; }
+                currentUser = await res.json();
+            } catch (err) { logout(); return; }
+
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('navButtons').innerHTML = `
+                <span style="color:#69f0ae;margin-right:10px;">${currentUser.email}</span>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">Вийти</button>
+            `;
+
+            // Show admin tab if admin
+            if (currentUser.is_admin) {
+                document.getElementById('adminTab').classList.remove('hidden');
+            }
+
+            loadPayments();
+        }
+
+        async function loadPayments() {
+            try {
+                const res = await fetch(`${API_URL}/payments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const payments = await res.json();
+                
+                const tbody = document.getElementById('paymentsTableBody');
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.4);">Ще немає платежів</td></tr>';
+                } else {
+                    tbody.innerHTML = payments.map(p => `
+                        <tr>
+                            <td style="font-size:12px;font-family:monospace;">${p.id.slice(0,8)}...</td>
+                            <td>${p.amount}</td>
+                            <td>${p.currency}</td>
+                            <td><span class="badge badge-${p.status}">${p.status}</span></td>
+                            <td>${p.description || '-'}</td>
+                            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Stats
+                document.getElementById('totalPayments').textContent = payments.length;
+                document.getElementById('completedPayments').textContent = payments.filter(p => p.status === 'completed').length;
+                document.getElementById('pendingPayments').textContent = payments.filter(p => p.status === 'pending').length;
+
+                // Load admin data if admin
+                if (currentUser.is_admin) loadAdminData();
+            } catch (err) {
+                document.getElementById('paymentsMessage').className = 'message error';
+                document.getElementById('paymentsMessage').textContent = 'Не вдалося завантажити платежі';
+            }
+        }
+
+        async function createPayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const currency = document.getElementById('paymentCurrency').value;
+            const description = document.getElementById('paymentDescription').value;
+            const msg = document.getElementById('createMessage');
+
+            if (!amount || amount <= 0) {
+                msg.className = 'message error';
+                msg.textContent = 'Будь ласка, введіть коректну суму';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/payments/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ amount, currency, description: description || null })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msg.className = 'message error';
+                    msg.textContent = data.detail || 'Не вдалося створити платіж';
+                    return;
+                }
+
+                msg.className = 'message success';
+                msg.textContent = `Платіж створено! ID: ${data.id.slice(0,8)}... Статус: ${data.status}`;
+                
+                // Reset form
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentDescription').value = '';
+                
+                // Reload payments
+                loadPayments();
+                switchTab('payments', document.querySelector('.tab'));
+            } catch (err) {
+                msg.className = 'message error';
+                msg.textContent = 'Помилка з\'єднання';
+            }
+        }
+
+        // Admin functions
+        async function loadAdminData() {
+            try {
+                const res = await fetch(`${API_URL}/admin/payments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const payments = await res.json();
+                
+                const tbody = document.getElementById('adminPaymentsBody');
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.4);">Немає платежів</td></tr>';
+                } else {
+                    tbody.innerHTML = payments.map(p => `
+                        <tr>
+                            <td style="font-size:12px;font-family:monospace;">${p.id.slice(0,8)}...</td>
+                            <td style="font-size:12px;font-family:monospace;">${p.user_id.slice(0,8)}...</td>
+                            <td>${p.amount} ${p.currency}</td>
+                            <td><span class="badge badge-${p.status}">${p.status}</span></td>
+                            <td>
+                                <select onchange="updatePaymentStatus('${p.id}', this.value)" style="width:auto;padding:4px;margin:0;">
+                                    <option value="pending" ${p.status === 'pending' ? 'selected' : ''}>Очікується</option>
+                                    <option value="completed" ${p.status === 'completed' ? 'selected' : ''}>Завершено</option>
+                                    <option value="failed" ${p.status === 'failed' ? 'selected' : ''}>Помилка</option>
+                                    <option value="refunded" ${p.status === 'refunded' ? 'selected' : ''}>Повернено</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                document.getElementById('adminMessage').className = 'message error';
+                document.getElementById('adminMessage').textContent = 'Не вдалося завантажити дані адміністратора';
+            }
+        }
+
+        async function updatePaymentStatus(paymentId, status) {
+            try {
+                const res = await fetch(`${API_URL}/admin/payments/${paymentId}/status?status=${status}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    loadAdminData();
+                    loadPayments();
+                }
+            } catch (err) {}
+        }
+
+        // Tabs
+        function switchTab(tab, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            
+            document.getElementById('paymentsTab').classList.toggle('hidden', tab !== 'payments');
+            document.getElementById('createTab').classList.toggle('hidden', tab !== 'create');
+            document.getElementById('adminTab').classList.toggle('hidden', tab !== 'admin');
+            
+            if (tab === 'admin') loadAdminData();
+        }
+    </script>
+</body>
+</html>
